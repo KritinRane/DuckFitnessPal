@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { DailyTotals, UserGoals } from "@/lib/types";
 
 const R = 70;
@@ -9,8 +10,6 @@ const C = 2 * Math.PI * R;
 export default function MacroDashboard() {
   const [totals, setTotals] = useState<DailyTotals>({ calories: 0, protein: 0, carbs: 0, fat: 0 });
   const [goals, setGoals] = useState<UserGoals | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [draft, setDraft] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 65 });
 
   useEffect(() => {
     async function load() {
@@ -19,26 +18,9 @@ export default function MacroDashboard() {
       const goalsData = await goalsRes.json();
       setTotals(logData.totals);
       setGoals(goalsData);
-      setDraft({
-        calories: goalsData.calories,
-        protein: goalsData.protein,
-        carbs: goalsData.carbs,
-        fat: goalsData.fat,
-      });
     }
     load();
   }, []);
-
-  async function saveGoals() {
-    const res = await fetch("/api/goals", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft),
-    });
-    const updated = await res.json();
-    setGoals(updated);
-    setEditMode(false);
-  }
 
   if (!goals) {
     return <div className="h-64 rounded-2xl bg-gray-50 animate-pulse" />;
@@ -53,37 +35,6 @@ export default function MacroDashboard() {
     { key: "carbs" as const, label: "Carbs", barColor: "#F59E0B" },
     { key: "fat" as const, label: "Fat", barColor: "#10B981" },
   ];
-
-  if (editMode) {
-    return (
-      <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-800">Daily Goals</span>
-          <button onClick={() => setEditMode(false)} className="text-xs text-gray-400 hover:text-gray-600">
-            Cancel
-          </button>
-        </div>
-        {(["calories", "protein", "carbs", "fat"] as const).map((key) => (
-          <div key={key} className="flex items-center gap-3">
-            <label className="w-20 text-sm text-gray-500 capitalize">{key}</label>
-            <input
-              type="number"
-              min={0}
-              value={draft[key]}
-              onChange={(e) => setDraft({ ...draft, [key]: Number(e.target.value) })}
-              className="flex-1 border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          </div>
-        ))}
-        <button
-          onClick={saveGoals}
-          className="w-full bg-red-600 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-red-700 transition-colors"
-        >
-          Save Goals
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -142,12 +93,12 @@ export default function MacroDashboard() {
         })}
       </div>
 
-      <button
-        onClick={() => setEditMode(true)}
+      <Link
+        href="/profile"
         className="text-xs text-gray-300 hover:text-gray-500 transition-colors"
       >
         Edit goals
-      </button>
+      </Link>
     </div>
   );
 }
