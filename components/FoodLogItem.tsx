@@ -15,8 +15,10 @@ export default function FoodLogItem({ entry, onDelete, onMultiplierChange }: Pro
   const [deleting, setDeleting] = useState(false);
   const [changing, setChanging] = useState(false);
 
-  const displayCalories =
-    entry.calories != null ? Math.round(entry.calories * entry.multiplier) : null;
+  const cal = entry.calories != null ? Math.round(entry.calories * entry.multiplier) : null;
+  const pro = entry.protein != null ? Math.round(entry.protein * entry.multiplier) : null;
+  const carb = entry.carbs != null ? Math.round(entry.carbs * entry.multiplier) : null;
+  const fat = entry.fat != null ? Math.round(entry.fat * entry.multiplier) : null;
 
   async function handleDelete() {
     setDeleting(true);
@@ -38,57 +40,58 @@ export default function FoodLogItem({ entry, onDelete, onMultiplierChange }: Pro
   }
 
   return (
-    <div className="flex items-start gap-3 px-5 py-3">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 truncate">{entry.itemName}</p>
-        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-          {MULTIPLIERS.map((m) => (
-            <button
-              key={m}
-              onClick={() => handleMultiplier(m)}
-              disabled={changing}
-              className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-                entry.multiplier === m
-                  ? "border-red-600 bg-red-600 text-white"
-                  : "border-gray-200 text-gray-500 hover:border-gray-400"
-              }`}
-            >
-              {m}x
-            </button>
-          ))}
+    <div className="px-4 py-3">
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-sm font-medium text-gray-800 truncate">{entry.itemName}</p>
+            {cal != null && (
+              <span className="text-sm font-bold text-gray-700 tabular-nums shrink-0">{cal}</span>
+            )}
+          </div>
+          {(pro != null || carb != null || fat != null) && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              {pro != null && <span>P {pro}g</span>}
+              {carb != null && <span> · C {carb}g</span>}
+              {fat != null && <span> · F {fat}g</span>}
+            </p>
+          )}
+          <div className="flex items-center gap-1 mt-2">
+            {MULTIPLIERS.map((m) => (
+              <button
+                key={m}
+                onClick={() => handleMultiplier(m)}
+                disabled={changing}
+                className={`text-[11px] px-2 py-0.5 rounded-full border font-medium transition-colors ${
+                  entry.multiplier === m
+                    ? "border-red-600 bg-red-600 text-white"
+                    : "border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600"
+                }`}
+              >
+                {m}×
+              </button>
+            ))}
+          </div>
         </div>
-        <p className="text-xs text-gray-400 mt-1">
-          {displayCalories != null && (
-            <span className="text-orange-500 font-medium">{displayCalories} kcal</span>
+
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-gray-200 hover:text-red-400 hover:bg-red-50 transition-colors"
+          aria-label={`Remove ${entry.itemName}`}
+        >
+          {deleting ? (
+            <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           )}
-          {entry.protein != null && (
-            <span className="text-blue-500 ml-1">· {Math.round(entry.protein * entry.multiplier)}g P</span>
-          )}
-          {entry.carbs != null && (
-            <span className="text-yellow-500 ml-1">· {Math.round(entry.carbs * entry.multiplier)}g C</span>
-          )}
-          {entry.fat != null && (
-            <span className="text-green-500 ml-1">· {Math.round(entry.fat * entry.multiplier)}g F</span>
-          )}
-        </p>
+        </button>
       </div>
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-        aria-label={`Remove ${entry.itemName}`}
-      >
-        {deleting ? (
-          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        )}
-      </button>
     </div>
   );
 }

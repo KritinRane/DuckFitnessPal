@@ -10,7 +10,6 @@ export default function MenuPage() {
   const [menu, setMenu] = useState<MenuByPeriod>({});
   const [date, setDate] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -35,21 +34,7 @@ export default function MenuPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ menuItemId: itemId }),
     });
-    if (res.ok) {
-      showToast("Added to log!");
-    }
-  }
-
-  async function handleSync() {
-    setSyncing(true);
-    try {
-      // Trigger scraper via API — in production this would call the Python scraper.
-      // For now, just refresh the menu from DB.
-      await load();
-      showToast("Menu refreshed");
-    } finally {
-      setSyncing(false);
-    }
+    if (res.ok) showToast("Added to log");
   }
 
   function showToast(msg: string) {
@@ -61,54 +46,35 @@ export default function MenuPage() {
     Object.keys(menu).filter((p) => !MEAL_PERIOD_ORDER.includes(p))
   );
 
+  const dateLabel = date
+    ? new Date(date + "T12:00:00").toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+
   return (
-    <main className="flex-1 max-w-lg mx-auto w-full px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Pierce Dining Hall</h1>
-          {date && (
-            <p className="text-xs text-gray-400 mt-0.5">
-              {new Date(date + "T12:00:00").toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          )}
-        </div>
-        <button
-          onClick={handleSync}
-          disabled={syncing || loading}
-          className="flex items-center gap-1.5 text-xs text-red-600 font-medium border border-red-200 rounded-full px-3 py-1.5 hover:bg-red-50 disabled:opacity-50 transition-colors"
-        >
-          <svg
-            className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+    <main className="flex-1 max-w-md mx-auto w-full px-5 pt-10 pb-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Menu</h1>
+        {dateLabel && <p className="text-sm text-gray-400 mt-0.5">{dateLabel} · Pierce Dining</p>}
       </div>
 
       {loading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-white rounded-2xl h-32 border border-gray-100" />
+            <div key={i} className="animate-pulse bg-gray-50 rounded-xl h-28" />
           ))}
         </div>
       ) : orderedPeriods.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center space-y-2">
-          <p className="text-gray-400 text-sm">No menu data for today.</p>
-          <p className="text-gray-300 text-xs">
-            Run the scraper or wait for the midnight sync.
-          </p>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <p className="text-gray-300 text-4xl mb-3">—</p>
+          <p className="text-sm font-medium text-gray-400">No menu data for today</p>
+          <p className="text-xs text-gray-300 mt-1">Run the scraper to populate meals</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1">
           {orderedPeriods.map((period) => (
             <MenuSection
               key={period}
@@ -120,9 +86,8 @@ export default function MenuPage() {
         </div>
       )}
 
-      {/* Toast */}
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-2 rounded-full shadow-lg animate-fade-in z-50">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50">
           {toast}
         </div>
       )}
