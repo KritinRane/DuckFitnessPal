@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  date        String   // YYYY-MM-DD
+  mealPeriod  String   // Breakfast, Lunch, Dinner, Late Night
+  station     String
+  name        String
+  servingSize String?
+  calories    Int?
+  protein     Float?
+  carbs       Float?
+  fat         Float?
+  createdAt   DateTime @default(now())
+
+  logEntries FoodLog[]
+
+  @@unique([date, name, mealPeriod, station])
+}
+
+model FoodLog {
+  id         String   @id @default(cuid())
+  date       String   // YYYY-MM-DD
+  menuItemId String?
+  itemName   String
+  servingSize String?
+  multiplier Float    @default(1.0)
+  calories   Int?
+  protein    Float?
+  carbs      Float?
+  fat        Float?
+  loggedAt   DateTime @default(now())
+
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id])
+}
+
+model UserGoals {
+  id       String @id @default(cuid())
+  calories Int    @default(2000)
+  protein  Int    @default(150)
+  carbs    Int    @default(250)
+  fat      Int    @default(65)
+}

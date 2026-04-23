@@ -2,10 +2,11 @@
 DineOnCampus scraper — Pierce Dining Hall, Stevens Institute of Technology.
 
 Uses Playwright (headless Chrome) to bypass Cloudflare bot protection.
-The browser solves the CF challenge naturally, then we run fetch() calls
-from inside that browser context (which already holds valid CF cookies).
+Navigates the browser directly to each API URL so CF solves its challenge
+for the apiv4 subdomain, then reads JSON from the page body.
 """
 
+import json
 import os
 import sys
 import time
@@ -14,33 +15,33 @@ from datetime import date
 
 import requests
 from playwright.sync_api import sync_playwright
+from playwright_stealth import Stealth
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
 BASE_API    = "https://apiv4.dineoncampus.com"
 LOCATION_ID = os.getenv("DINEONCAMPUS_LOCATION_ID", "58adee613191a2d1edd788c4")
-SITE_URL    = "https://dineoncampus.com/stevensdining"
 APP_URL     = os.getenv("APP_URL", "http://localhost:3000")
 SECRET      = os.getenv("SCRAPER_SECRET", "dev-secret")
 
 
-def browser_fetch(page, url: str) -> dict:
-    """Run fetch() inside the live browser context so CF cookies are included."""
-    return page.evaluate("async (u) => { const r = await fetch(u); return r.json(); }", url)
+def browser_get_json(page, url: str) -> dict:
+    """Navigate the browser to a JSON API URL and parse the response body."""
+    page.goto(url, wait_until="networkidle", timeout=30_000)
+    text = page.inner_text("body")
+    return json.loads(text)
 
 
 def scrape(scrape_date: str) -> list[dict]:
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
         page = browser.new_page()
+        Stealth().use_sync(page)
 
-        log.info("Opening dining page (letting Cloudflare challenge run)…")
-        page.goto(SITE_URL, wait_until="networkidle", timeout=30_000)
-        log.info("Page ready")
-
+        log.info("Fetching periods for %s…", scrape_date)
         periods_url = f"{BASE_API}/locations/{LOCATION_ID}/periods/?date={scrape_date}"
-        periods = browser_fetch(page, periods_url).get("periods", [])
+        periods = browser_get_json(page, periods_url).get("periods", [])
 
         if not periods:
             log.warning("No periods returned — dining hall may be closed on %s", scrape_date)
@@ -56,7 +57,7 @@ def scrape(scrape_date: str) -> list[dict]:
             log.info("Fetching %s…", period_name)
 
             menu_url = f"{BASE_API}/locations/{LOCATION_ID}/menu?date={scrape_date}&period={period_id}"
-            categories = browser_fetch(page, menu_url).get("menu", {}).get("categories", [])
+            categories = browser_get_json(page, menu_url).get("menu", {}).get("categories", [])
 
             for cat in categories:
                 station = cat.get("name", "Other")
