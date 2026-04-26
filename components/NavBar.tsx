@@ -14,7 +14,7 @@ export default function NavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-100">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800">
       <div className="flex items-stretch justify-around h-14 max-w-md mx-auto">
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
@@ -23,7 +23,7 @@ export default function NavBar() {
               key={href}
               href={href}
               className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 transition-colors ${
-                active ? "text-red-600" : "text-gray-400 hover:text-gray-600"
+                active ? "text-red-600" : "text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400"
               }`}
             >
               {active && (

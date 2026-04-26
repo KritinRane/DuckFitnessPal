@@ -22,31 +22,23 @@ export default function FoodLogItem({ entry, onDelete, onMultiplierChange }: Pro
 
   async function handleDelete() {
     setDeleting(true);
-    try {
-      await onDelete(entry.id);
-    } finally {
-      setDeleting(false);
-    }
+    try { await onDelete(entry.id); } finally { setDeleting(false); }
   }
 
   async function handleMultiplier(m: number) {
     if (m === entry.multiplier) return;
     setChanging(true);
-    try {
-      await onMultiplierChange(entry.id, m);
-    } finally {
-      setChanging(false);
-    }
+    try { await onMultiplierChange(entry.id, m); } finally { setChanging(false); }
   }
 
   return (
-    <div className="px-4 py-3">
+    <div className="px-4 py-3 bg-white dark:bg-black">
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-2">
-            <p className="text-sm font-medium text-gray-800 truncate">{entry.itemName}</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{entry.itemName}</p>
             {cal != null && (
-              <span className="text-sm font-bold text-gray-700 tabular-nums shrink-0">{cal}</span>
+              <span className="text-sm font-bold text-gray-700 dark:text-gray-300 tabular-nums shrink-0">{cal}</span>
             )}
           </div>
           {(pro != null || carb != null || fat != null) && (
@@ -65,7 +57,7 @@ export default function FoodLogItem({ entry, onDelete, onMultiplierChange }: Pro
                 className={`text-[11px] px-2 py-0.5 rounded-full border font-medium transition-colors ${
                   entry.multiplier === m
                     ? "border-red-600 bg-red-600 text-white"
-                    : "border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600"
+                    : "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 }`}
               >
                 {m}×
@@ -77,7 +69,7 @@ export default function FoodLogItem({ entry, onDelete, onMultiplierChange }: Pro
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-gray-200 hover:text-red-400 hover:bg-red-50 transition-colors"
+          className="shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-gray-200 dark:text-gray-700 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           aria-label={`Remove ${entry.itemName}`}
         >
           {deleting ? (

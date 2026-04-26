@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark, .dark *));
+
 :root {
   --accent: #E63946;
   --accent-dark: #C1121F;
+}
+
+@keyframes celebrate {
+  0%   { transform: scale(1); }
+  15%  { transform: scale(1.06); }
+  35%  { transform: scale(0.97); }
+  55%  { transform: scale(1.03); }
+  75%  { transform: scale(0.99); }
+  100% { transform: scale(1); }
+}
+
+.animate-celebrate {
+  animation: celebrate 0.7s ease-in-out;
 }
 
 @theme inline {
@@ -16,4 +31,10 @@ body {
   color: #111111;
   font-family: var(--font-geist), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.dark body {
+  background: #000000;
+  color: #f9fafb;
 }

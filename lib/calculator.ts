@@ -48,6 +48,10 @@ export function calculateTDEE(
   sex: Sex,
   activity: ActivityLevel
 ): number {
+
+  // Guard clause to handle impossible data
+  if (weightLbs <= 0 || age <= 0 || (heightFt * 12 + heightIn) <= 0) return 0;
+
   const weightKg = weightLbs * 0.453592;
   const heightCm = (heightFt * 12 + heightIn) * 2.54;
   const bmr =
@@ -83,6 +87,9 @@ export function calculateMacros(
   const protein = Math.round(weightLbs * proteinPerLb);
   const fat = Math.round((calories * 0.25) / 9);
   const carbCals = calories - protein * 4 - fat * 9;
-  const carbs = Math.round(Math.max(50, carbCals) / 4);
+  
+  // Logic: Calculate carbs, round it, but force it to stay at or above 50g
+  const carbs = Math.max(50, Math.round(carbCals / 4));
+  
   return { protein, fat, carbs };
 }
